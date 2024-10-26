@@ -105,29 +105,6 @@ limit 5;
 
 
 # What can you tell me about the customers that are spending the most on [genre], [artist], etc?
-
-# Most spending on genre
-# customer, genre, track, invoiceline
-
--- select rank() over(partition by c.customerId, g.GenreId order by il.unitPrice * il.Quantity) as cust_rank -- count(*), 
--- from Customer c
--- Join 
--- Invoice i
--- on
--- c.CustomerId = i.CustomerId
--- join Invoiceline il
--- on
--- i.InvoiceId = il.InvoiceId
--- join track t
--- on
--- t.TrackId = il.TrackId
--- join
--- Genre g
--- on
--- g.GenreId = t.GenreId
--- -- group by
--- -- t.GenreId
-
 WITH GenreSpending AS (
     SELECT 
         g.GenreId,
@@ -167,3 +144,60 @@ FROM
     RankedSpending
 WHERE 
     SpendingRank = 1;
+
+-- 13.Track changes in sales by genre using the genre, track, and invoiceline tables to identify trends.
+-- Tableau Question
+-- select * from 
+-- Genre g
+-- Join
+-- track t
+-- on 
+-- t.GenreId = g.GenreId
+-- join invoiceline it
+-- on
+-- it.TrackId = t.TrackId;
+
+
+-- 14 How effective are different media types in generating sales?
+select m.name, sum(it.UnitPrice * it.Quantity) TotalSales from track t
+join 
+mediatype m
+on 
+t.MediaTypeId = m.MediaTypeId
+join
+invoiceline it
+on
+t.TrackId = it.TrackId
+group by
+m.MediaTypeId
+order by
+TotalSales
+desc;
+# MPEG audio file is the mostly used media type which has maximum sale equal to 1956.24 units.
+
+
+-- 16.What is the average customer purchase size and frequency?
+
+
+-- 17.Use data from the customer and invoice tables to calculate average invoice totals and purchase frequency per customer.
+select concat(c.FirstName, ' ', c.LastName) Customer, sum(i.Total) invoice_total, count(*) purchase_frequency
+from Customer c
+Join Invoice i
+on 
+c.CustomerId = i.CustomerId
+group by
+c.CustomerId;
+# Dummy data and thus is uniform for each customer
+
+-- 18.Which playlists are most popular among users?
+
+
+-- 19.Analyze data from the playlist and playlisttrack tables to determine which playlists have the most tracks or engagement.
+
+-- 20.How does customer location influence purchasing behavior?
+
+-- 21.Investigate how factors like country, city, or state (from the customer table) correlate with purchasing patterns.
+
+-- 22.What is the impact of employee support on customer satisfaction?
+
+-- 23.Explore any correlations between customer spending and their assigned support representative using data from the customer and employee tables.
