@@ -186,18 +186,138 @@ Join Invoice i
 on 
 c.CustomerId = i.CustomerId
 group by
-c.CustomerId;
+c.CustomerId
+order by
+invoice_total
+desc;
+
 # Dummy data and thus is uniform for each customer
+# From the data, it can be inferred that Helena Holy made the most purchase in her 7 total visits.
 
 -- 18.Which playlists are most popular among users?
+with playlistInfo as (
+	select sum(il.Quantity) quantity, p.playlistid playlistid, p.Name playlist from 
+	Customer c
+	join invoice i
+	on
+	c.CustomerId = i.CustomerId
+	Join  invoiceline il
+	on
+	i.InvoiceId = il.InvoiceId
+	Join track t
+	on
+	il.TrackId = t.TrackId
+	Join playlisttrack pt
+	on
+	pt.TrackId = t.TrackId
+	Join playlist p
+	on
+	p.PlaylistId = pt.PlaylistId
+	group by
+	p.PlaylistId
+	order by
+	quantity
+	desc
+)
 
+-- select distinct p1.playlist, p1.playlistId, case 
+-- when p1.playlist = p2.playlist then p1.quantity + p2.quantity 
+-- end as quantity from playlistinfo p1
+-- join playlistinfo p2
+-- on
+-- p1.playlistid = p2.playlistid;
+
+# As we see some of the playlist have same names but different ids
+# Assuming the different playlist id correspond to the same data.
+select playlist ,sum(quantity) quantity from playlistinfo group by playlist;
+-- select * from (select sum(quantity) quantity, row_number() over(partition by playlist order by playlistid) as pl_rownum from playlistinfo group by playlist) as grouped_table where pl_rownum=1
+-- -- , sum(quantity) quantity from playlistinfo group by playlist;
+
+# From the result, it can be inferred that Music playlist is the most popular among users.
 
 -- 19.Analyze data from the playlist and playlisttrack tables to determine which playlists have the most tracks or engagement.
+select count(*) track_count, pt.playlistId from playlist p
+join
+playlisttrack pt
+on
+p.PlayListid - pt.playlistid
+join track t
+on
+t.TrackId = pt.TrackId
+group by
+pt.playlistId
+order by
+track_count
+desc;
 
 -- 20.How does customer location influence purchasing behavior?
+# Visualizing customer city's effect on purchasing behavior
+select c.city, sum(i.Total) total_purchase from
+Customer c
+Join 
+invoice i
+on
+c.CustomerId = i.CustomerId
+group by
+c.city
+order by
+total_purchase
+desc;
+# Prague (capital of Czech Republic) is the city in which customer mostly purchase
 
--- 21.Investigate how factors like country, city, or state (from the customer table) correlate with purchasing patterns.
+select c.state, sum(i.Total) total_purchase from
+Customer c
+Join 
+invoice i
+on
+c.CustomerId = i.CustomerId
+where c.state is not null
+group by
+c.state
+order by
+total_purchase
+desc;
+# As we see California being the state with most purchases followed by SP (São Paulo).
+
+select c.Country, sum(i.Total) total_purchase from
+Customer c
+Join 
+invoice i
+on
+c.CustomerId = i.CustomerId
+where c.Country is not null
+group by
+c.Country
+order by
+total_purchase
+desc;
+# As we saw state CA has the maximum purchasing behavior and so country wise we found USA to be having the most purchasing behavior.
 
 -- 22.What is the impact of employee support on customer satisfaction?
 
+
 -- 23.Explore any correlations between customer spending and their assigned support representative using data from the customer and employee tables.
+with employee_customer as (
+select concat(e.FirstName, " ", e.LastName) employee_name, e.EmployeeId, c.CustomerId, max(i.Total) as total_spend from
+Customer c
+Join
+Employee e
+on 
+c.SupportRepId = e.EmployeeId
+Join
+Invoice i
+on
+c.CustomerId = i.CustomerId
+group by
+c.CustomerId
+)
+
+select employee_name, employeeid, sum(total_spend) tot_spend from
+employee_customer 
+group by
+employeeId
+order by
+tot_spend
+desc;
+# Jane Peacock is considered the best support representative with maximum interactions with customers 
+# and a total spend of $313.11.
