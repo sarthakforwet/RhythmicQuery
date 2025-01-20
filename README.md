@@ -1,5 +1,7 @@
 # Rhythmic Query
 
+![database schema](schema.png)
+
 ## Project Overview
 **Rhythmic Query** is a project focused on database design and data analytics strategies for a music company. The objective is to derive insights on song popularity, genre trends, and user engagement by analyzing music-related data. SQL and MySQL were used to structure and query the database, and Tableau visualizations highlight the insights generated.
 
